@@ -45,7 +45,7 @@ class ConsoleLearner:
 
     def learn(self, passes=1):
         """Learn words."""
-        print("\033c") # clear console
+        print("\033c", end="") # clear console
         for _ in range(passes):
             for pair in self.strategy.select(self.unit):
                 self.testPair(pair)
