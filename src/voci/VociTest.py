@@ -8,6 +8,6 @@ unit = VocabularyUnit(
     ]
 )
 
-learner = ConsoleLearner(unit, RandomStrategy())
-learner.learn(passes=3)
+learner = ConsoleLearner(unit, RandomStrategy(passes=3))
+learner.learn()
 learner.printStats()

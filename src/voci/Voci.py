@@ -43,12 +43,11 @@ class ConsoleLearner:
         self.unit = unit
         self.strategy = strategy
 
-    def learn(self, passes=1):
+    def learn(self):
         """Learn words."""
         print("\033c", end="") # clear console
-        for _ in range(passes):
-            for pair in self.strategy.select(self.unit):
-                self.testPair(pair)
+        for pair in self.strategy.select(self.unit):
+            self.testPair(pair)
 
     def testPair(self, pair):
         response = input(f'Translate "{pair.word1}": ')
@@ -66,12 +65,18 @@ class ConsoleLearner:
             print(f'{stats} {pair}')
 
 class SimpleStrategy:
+    def __init__(self, passes=1):
+        self.passes = passes
+
     def select(self, unit):
         """Simply selects all word pairs in the unit."""
-        return unit.pairs
+        return unit.pairs * self.passes
 
 class RandomStrategy:
     """Learning strategy that uniformly samples from all word pairs"""
+    def __init__(self, passes=1):
+        self.passes = passes
+
     def select(self, unit):
-        return random.sample(unit.pairs, len(unit.pairs))
+        return random.sample(unit.pairs*self.passes, len(unit.pairs)*self.passes)
 
