@@ -10,4 +10,4 @@ unit = VocabularyUnit(
 
 learner = ConsoleLearner(unit, RandomStrategy(passes=3))
 learner.learn()
-learner.printStats()
+learner.print_stats()
