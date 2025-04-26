@@ -6,7 +6,7 @@ class WordPair:
         self.word2 = word2
     
     def __str__(self):
-        return f'{self.word1}'
+        return f'{self.word1} -> {self.word2}'
 
 class Stats:
     def __init__(self):
@@ -26,7 +26,7 @@ class Stats:
             self.incorrect += 1
     
     def __str__(self):
-        return f'{self.successRate()} ({self.correct}/{self.total()})'
+        return f'{self.successRate():4.0%} ({self.correct}/{self.total()})'
     
 class VocabularyUnit:
     """A vocabulary unit to learn, consisting of a set of word pairs."""
@@ -37,36 +37,41 @@ class VocabularyUnit:
     def record(self, pair, correct):
         self.stats.setdefault(pair, Stats()).record(correct)
     
-    def printStats(self):
-        for pair, stats in self.stats.items():
-            print(f'{pair}: {stats}')
 
-class LearningStrategy:
-    def __init__(self, unit):
+class ConsoleLearner:
+    def __init__(self, unit, strategy):
         self.unit = unit
+        self.strategy = strategy
+
+    def learn(self, passes=1):
+        """Learn words."""
+        print("\033c") # clear console
+        for _ in range(passes):
+            for pair in self.strategy.select(self.unit):
+                self.testPair(pair)
 
     def testPair(self, pair):
         response = input(f'Translate "{pair.word1}": ')
+        print("\033[H\033[J", end="")  # erase line
         correct = response == pair.word2
         self.unit.record(pair, correct)
         if correct:
             print('Correct!')
         else:
-            print(f'Incorrect, the translation is "{pair.word2}"')
+            print(f'Incorrect, the translation of "{pair.word1}" is "{pair.word2}"')
         return correct
-    
-    def learn(self):
-        """Performs a single learning run."""
-        for pair in self.unit.pairs:
-            self.testPair(pair)
-        self.unit.printStats()
 
-class RandomStrategy(LearningStrategy):
-    def __init__(self, unit):
-        super().__init__(unit)
-    
-    def learn(self):
-        for pair in random.sample(self.unit.pairs, len(self.unit.pairs)):
-            self.testPair(pair)
-        self.unit.printStats()
+    def printStats(self):
+        for pair, stats in self.unit.stats.items():
+            print(f'{stats} {pair}')
+
+class SimpleStrategy:
+    def select(self, unit):
+        """Simply selects all word pairs in the unit."""
+        return unit.pairs
+
+class RandomStrategy:
+    """Learning strategy that uniformly samples from all word pairs"""
+    def select(self, unit):
+        return random.sample(unit.pairs, len(unit.pairs))
 
