@@ -1,4 +1,4 @@
-from Voci import *
+from voci import *
 
 unit = VocabularyUnit(
     [
