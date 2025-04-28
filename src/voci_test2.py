@@ -1,9 +1,10 @@
 from voci import *
 
-unit = VocabularyUnit.read_from('data/test.voci')
+filename = 'data/test.voci'
+unit = VocabularyUnit.read_from(filename)
 
 learner = ConsoleLearner()
 learner.learn(unit)
 unit.print_stats()
 
-unit.save_to('data/test.voci')
+unit.save_to(filename)
