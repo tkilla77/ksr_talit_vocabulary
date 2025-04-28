@@ -66,4 +66,4 @@ Special methods:
 ### Lesson 6
   * Extensions
     * TkLearner showing a gui
-    * 
+    * Decay: older attempts should contribute less weight to the score for each word pair than newer attempts. For example, we could compute the score by taking the average of the previous score and the current attempt (which is either 1 or 0 depending on correctness): $score = \frac{score + correct}{2}$

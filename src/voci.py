@@ -7,10 +7,23 @@ class WordPair:
         self.stats = Stats()
     
     def record(self, correct):
+        """Records the result of a single learning attempt."""
         self.stats.record(correct)
         
     def __str__(self):
         return f'{self.stats} {self.word1} -> {self.word2}'
+    
+    def _to_dict(self):
+        return {'word1': self.word1, 'word2': self.word2, 'correct': self.stats.correct, 'incorrect': self.stats.incorrect}
+    
+    @staticmethod
+    def _from_dict(data):
+        pair = WordPair(data['word1'], data['word2'])
+        if data['correct']:
+            pair.stats.correct = data['correct']
+        if data['incorrect']:
+            pair.stats.incorrect = data['incorrect']
+        return pair
 
 class Stats:
     """Learning statistics for a single word pair."""
@@ -24,7 +37,8 @@ class Stats:
     
     def success_rate(self):
         """The fraction of successful attempts."""
-        return self.correct / self.total()
+        import math
+        return self.correct / self.total() if self.total() > 0 else math.nan
     
     def record(self, correct):
         """Records a single attempt."""
@@ -40,35 +54,27 @@ class VocabularyUnit:
     """A vocabulary unit to learn, consisting of a set of word pairs."""
     def __init__(self, pairs):
         self.pairs = pairs
-    
-class ConsoleLearner:
-    """A vocabulary prompter for the console (terminal)."""
-    def __init__(self, unit, strategy):
-        self.unit = unit
-        self.strategy = strategy
-
-    def learn(self):
-        """Performs a single learning run on the learner's unit using the configured
-           learning strategy."""
-        print("\033c", end="") # clear console
-        for pair in self.strategy.select(self.unit):
-            self.test_pair(pair)
-
-    def test_pair(self, pair):
-        """Asks for a single word and tests for correctness, recording the outcome."""
-        response = input(f'Translate "{pair.word1}": ')
-        print("\033[H\033[J", end="")  # erase line
-        correct = response == pair.word2
-        pair.record(correct)
-        if correct:
-            print('Correct!')
-        else:
-            print(f'Incorrect, the translation of "{pair.word1}" is "{pair.word2}"')
-        return correct
 
     def print_stats(self):
-        for pair in self.unit.pairs:
+        for pair in self.pairs:
             print(f'{pair}')
+    
+    @staticmethod
+    def read_from(filename):
+        import json
+        pairs = []
+        with open(filename, 'r') as infile:
+            for line in infile:
+                data = json.loads(line)
+                pairs.append(WordPair._from_dict(data))
+        return VocabularyUnit(pairs)
+
+    def save_to(self, filename):
+        import json
+        with open(filename, 'w') as out:
+            for pair in self.pairs:
+                json.dump(pair._to_dict(), out)
+                out.write('\n')
 
 class SimpleStrategy:
     """A learning strategy that selects all word pairs in a unit, in order.
@@ -86,4 +92,28 @@ class RandomStrategy:
 
     def select(self, unit):
         return random.sample(unit.pairs*self.passes, len(unit.pairs)*self.passes)
+
+class ConsoleLearner:
+    """A vocabulary prompter for the console (terminal)."""
+    def __init__(self, strategy=SimpleStrategy()):
+        self.strategy = strategy
+
+    def learn(self, unit):
+        """Performs a single learning run on the learner's unit using the configured
+           learning strategy."""
+        print("\033c", end="") # clear console
+        for pair in self.strategy.select(unit):
+            self.test_pair(pair)
+
+    def test_pair(self, pair):
+        """Asks for a single word and tests for correctness, recording the outcome."""
+        response = input(f'Translate "{pair.word1}": ')
+        print("\033[H\033[J", end="")  # erase line
+        correct = response == pair.word2
+        pair.record(correct)
+        if correct:
+            print('Correct!')
+        else:
+            print(f'Incorrect, the translation of "{pair.word1}" is "{pair.word2}"')
+        return correct
 
