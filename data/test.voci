@@ -1,3 +1,10 @@
-{"word1": "Baum", "word2": "tree", "correct": 1, "incorrect": 2}
-{"word1": "Blume", "word2": "flower", "correct": 1, "incorrect": 2}
-{"word1": "Fisch", "word2": "fish", "correct": 1, "incorrect": 2}
+{"word1": "Baum", "word2": "tree", "correct": 11, "incorrect": 4, "score": 0.873779296875}
+{"word1": "Blume", "word2": "flower", "correct": 23, "incorrect": 14, "score": 0.9980483035906218}
+{"word1": "Fisch", "word2": "fish", "correct": 17, "incorrect": 5, "score": 0.9970378875732422}
+{"word1": "Haus", "word2": "house", "correct": 17, "incorrect": 21, "score": 0.9990234379620233}
+{"word1": "See", "word2": "lake", "correct": 9, "incorrect": 1, "score": 0.9951171875}
+{"word1": "Tisch", "word2": "table", "correct": 10, "incorrect": 16, "score": 0.968750461935997}
+{"word1": "Stuhl", "word2": "chair", "correct": 11, "incorrect": 13, "score": 0.9687781929969788}
+{"word1": "Maus", "word2": "mouse", "correct": 10, "incorrect": 0, "score": 0.9990234375}
+{"word1": "Katze", "word2": "cat", "correct": 10, "incorrect": 9, "score": 0.9376201629638672}
+{"word1": "Fluss", "word2": "river", "correct": 15, "incorrect": 1, "score": 0.9999237060546875}

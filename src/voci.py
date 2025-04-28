@@ -14,15 +14,20 @@ class WordPair:
         return f'{self.stats} {self.word1} -> {self.word2}'
     
     def _to_dict(self):
-        return {'word1': self.word1, 'word2': self.word2, 'correct': self.stats.correct, 'incorrect': self.stats.incorrect}
+        return {'word1': self.word1, 'word2': self.word2, 'correct': self.stats.correct, 'incorrect': self.stats.incorrect, 'score': self.stats.score}
     
     @staticmethod
     def _from_dict(data):
+        import math
         pair = WordPair(data['word1'], data['word2'])
-        if data['correct']:
+        if 'correct' in data:
             pair.stats.correct = data['correct']
-        if data['incorrect']:
+        if 'incorrect' in data:
             pair.stats.incorrect = data['incorrect']
+        if 'score' in data:
+            pair.stats.score = data['score']
+        elif not math.isnan(pair.stats.success_rate()):
+            pair.stats.score = pair.stats.success_rate()
         return pair
 
 class Stats:
@@ -30,6 +35,7 @@ class Stats:
     def __init__(self):
         self.correct = 0
         self.incorrect = 0
+        self.score = 0.0
     
     def total(self):
         """The number of attempts."""
@@ -46,9 +52,10 @@ class Stats:
             self.correct += 1
         else:
             self.incorrect += 1
+        self.score = 0.5 * (self.score + correct)
     
     def __str__(self):
-        return f'{self.success_rate():4.0%} ({self.correct}/{self.total()})'
+        return f'{self.score:4.0%} ({self.correct}/{self.total()})'
     
 class VocabularyUnit:
     """A vocabulary unit to learn, consisting of a set of word pairs."""
@@ -56,7 +63,7 @@ class VocabularyUnit:
         self.pairs = pairs
 
     def print_stats(self):
-        for pair in self.pairs:
+        for pair in sorted(self.pairs, key=lambda p:p.stats.score):
             print(f'{pair}')
     
     @staticmethod
@@ -77,33 +84,33 @@ class VocabularyUnit:
                 out.write('\n')
 
 class SimpleStrategy:
-    """A learning strategy that selects all word pairs in a unit, in order.
-       Optionally, the number of passes can be set."""
-    def __init__(self, passes=1):
-        self.passes = passes
-
-    def select(self, unit):
-        return unit.pairs * self.passes
+    """A learning strategy that selects all word pairs in a unit, in order."""
+    def select(self, unit, i):
+        return unit.pairs[i%len(unit.pairs)]
 
 class RandomStrategy:
-    """A learning strategy that selects a uniform random sample from all word pairs."""
-    def __init__(self, passes=1):
-        self.passes = passes
+    """A learning strategy that selects a random pair from all word pairs."""
+    def select(self, unit, i):
+        return random.choice(unit.pairs)
 
-    def select(self, unit):
-        return random.sample(unit.pairs*self.passes, len(unit.pairs)*self.passes)
+class ScoreStrategy:
+    """A learning strategy that selects a random word pair weighted by inverse score."""
+    def select(self, unit, i):
+        return random.choices(unit.pairs, weights=[2-p.stats.score for p in unit.pairs])[0]
 
 class ConsoleLearner:
     """A vocabulary prompter for the console (terminal)."""
-    def __init__(self, strategy=SimpleStrategy()):
+    def __init__(self, strategy=ScoreStrategy()):
         self.strategy = strategy
 
-    def learn(self, unit):
+    def learn(self, unit, count=None):
         """Performs a single learning run on the learner's unit using the configured
            learning strategy."""
         print("\033c", end="") # clear console
-        for pair in self.strategy.select(unit):
-            self.test_pair(pair)
+        if count is None:
+            count = len(unit.pairs)
+        for i in range(count):
+            self.test_pair(self.strategy.select(unit, i))
 
     def test_pair(self, pair):
         """Asks for a single word and tests for correctness, recording the outcome."""
