@@ -96,7 +96,19 @@ class RandomStrategy:
 class ScoreStrategy:
     """A learning strategy that selects a random word pair weighted by inverse score."""
     def select(self, unit, i):
-        return random.choices(unit.pairs, weights=[2-p.stats.score for p in unit.pairs])[0]
+        # WordPair scores are in the interval [0, 1), with exponential decay:
+        # After a single correct answer, the score is at 0.5, after two correct at 0.75
+        # after 7 attempts at 0.99. We choose weights such that a perfect pair still has a
+        # non-zero chance of being chosen. Let's define 'non-zero' such that a perfect pair
+        # (score 1) has 10% the chance of a pristine (score 0) pair:
+        # weight(1.0) = 0.1 * weight(0.0) # perfect pairs have 10% the weight of zero pairs
+        # weight(score) = b - score       # we want a linear function
+        # b-1 = 0.1*(b-0)
+        # 0.9b = 1
+        # b = 1/0.9 = 1.11
+        perfect_weight = 0.1  # 10%
+        b = 1/(1-perfect_weight)
+        return random.choices(unit.pairs, weights=[b-p.stats.score for p in unit.pairs])[0]
 
 class ConsoleLearner:
     """A vocabulary prompter for the console (terminal)."""
@@ -109,8 +121,14 @@ class ConsoleLearner:
         print("\033c", end="") # clear console
         if count is None:
             count = len(unit.pairs)
+        last = None
         for i in range(count):
-            self.test_pair(self.strategy.select(unit, i))
+            pair = self.strategy.select(unit, i)
+            # Avoid asking the same pair twice in a row.
+            while pair == last and len(unit.pairs) > 1:
+                pair = self.strategy.select(unit, i)
+            last = pair
+            self.test_pair(pair)
 
     def test_pair(self, pair):
         """Asks for a single word and tests for correctness, recording the outcome."""
