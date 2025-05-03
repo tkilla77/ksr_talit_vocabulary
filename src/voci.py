@@ -115,10 +115,20 @@ class ConsoleLearner:
     def __init__(self, strategy=ScoreStrategy()):
         self.strategy = strategy
 
+    def clear_console(self):
+        """Clears the entire terminal window (console)."""
+        # see https://en.wikipedia.org/wiki/ANSI_escape_code
+        print("\033c", end="")
+    
+    def clear_line(self):
+        """Clears the current line in the terminal."""
+        # see https://en.wikipedia.org/wiki/ANSI_escape_code
+        print("\033[H\033[J", end="")
+
     def learn(self, unit, count=None):
         """Performs a single learning run on the learner's unit using the configured
            learning strategy."""
-        print("\033c", end="") # clear console
+        self.clear_console(self)
         if count is None:
             count = len(unit.pairs)
         last = None
@@ -133,7 +143,7 @@ class ConsoleLearner:
     def test_pair(self, pair):
         """Asks for a single word and tests for correctness, recording the outcome."""
         response = input(f'Translate "{pair.word1}": ')
-        print("\033[H\033[J", end="")  # erase line
+        self.clear_line()
         correct = response == pair.word2
         pair.record(correct)
         if correct:
