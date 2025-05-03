@@ -172,10 +172,15 @@ class ConsoleLearner:
 
     def learn(self, unit, criterion=None):
         """Performs a single learning run on the learner's unit using the configured
-           learning strategy."""
+           learning strategy and stopping when the criterion is satisfied.
+           
+           If no criterion is given, the run stops if either one minute has passed
+           or all words have a score >= 90%."""
         if criterion is None:
+            # Default criterion: stop after 1m or if all scores above 90%
             criterion = OrCriterion(TimerCriterion(datetime.timedelta(minutes=1)),
                                     ScoreCriterion(0.9))
+
         self.clear_console()
         last = None
         i = 0
@@ -203,4 +208,3 @@ class ConsoleLearner:
         else:
             print(f'Incorrect, the translation of "{pair.word1}" is "{pair.word2}"')
         return correct
-
