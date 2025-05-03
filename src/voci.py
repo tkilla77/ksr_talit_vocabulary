@@ -140,7 +140,7 @@ class ScoreCriterion:
         for pair in unit.pairs:
             if pair.stats.score < self.threshold:
                 return False
-        return f"Good enough - all words above {self.threshold}!"  # all pairs above
+        return f"Good enough - all words above {self.threshold:.0%}!"  # all pairs above
 
 class OrCriterion:
     """A stop criterion that combines multiple criteria and stops if at least one
