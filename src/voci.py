@@ -1,4 +1,4 @@
-import random
+import random, datetime
 class WordPair:
     """A pair of words in two languages, with learning statistics."""
     def __init__(self, word1, word2):
@@ -110,6 +110,51 @@ class ScoreStrategy:
         b = 1/(1-perfect_weight)
         return random.choices(unit.pairs, weights=[b-p.stats.score for p in unit.pairs])[0]
 
+class CountingStopCriterion:
+    """A stop criterion that stops after a given number of tries."""
+    def __init__(self, n):
+        self.count = n
+    
+    def should_stop(self, unit):
+        self.count -= 1
+        if self.count >= 0:
+            return "Enough for now!"
+        return False
+
+class TimerCriterion:
+    """A stop criterion that stops after a given session duration (a timedelta)."""
+    def __init__(self, duration):
+        self.end = datetime.datetime.now() + duration
+
+    def should_stop(self, unit):
+        if datetime.datetime.now() > self.end:
+            return "Time's up!"
+        return False
+
+class ScoreCriterion:
+    """A stop criterion that stops when the least score in the unit is above the given threshold."""
+    def __init__(self, threshold):
+        self.threshold = threshold
+
+    def should_stop(self, unit):
+        for pair in unit.pairs:
+            if pair.stats.score < self.threshold:
+                return False
+        return f"Good enough - all words above {self.threshold}!"  # all pairs above
+
+class OrCriterion:
+    """A stop criterion that combines multiple criteria and stops if at least one
+       criterion is satisfied."""
+    def __init__(self, *criteria):
+        self.criteria = criteria
+    
+    def should_stop(self, unit):
+        for criterion in self.criteria:
+            reason = criterion.should_stop(unit)
+            if reason:
+                return reason
+        return False
+
 class ConsoleLearner:
     """A vocabulary prompter for the console (terminal)."""
     def __init__(self, strategy=ScoreStrategy()):
@@ -125,20 +170,27 @@ class ConsoleLearner:
         # see https://en.wikipedia.org/wiki/ANSI_escape_code
         print("\033[H\033[J", end="")
 
-    def learn(self, unit, count=None):
+    def learn(self, unit, criterion=None):
         """Performs a single learning run on the learner's unit using the configured
            learning strategy."""
-        self.clear_console(self)
-        if count is None:
-            count = len(unit.pairs)
+        if criterion is None:
+            criterion = OrCriterion(TimerCriterion(datetime.timedelta(minutes=1)),
+                                    ScoreCriterion(0.9))
+        self.clear_console()
         last = None
-        for i in range(count):
+        i = 0
+        while True:
+            reason = criterion.should_stop(unit)
+            if reason:
+                print(f'Stopping: {reason}')
+                break
             pair = self.strategy.select(unit, i)
             # Avoid asking the same pair twice in a row.
             while pair == last and len(unit.pairs) > 1:
                 pair = self.strategy.select(unit, i)
             last = pair
             self.test_pair(pair)
+            i += 1
 
     def test_pair(self, pair):
         """Asks for a single word and tests for correctness, recording the outcome."""
