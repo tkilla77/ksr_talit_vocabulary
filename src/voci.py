@@ -116,6 +116,7 @@ class CountingStopCriterion:
         self.count = n
     
     def should_stop(self, unit):
+        """Returns False if learning should continue, a string explaining why we're done otherwise."""
         self.count -= 1
         if self.count >= 0:
             return "Enough for now!"
