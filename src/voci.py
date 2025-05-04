@@ -84,18 +84,23 @@ class VocabularyUnit:
                 out.write('\n')
 
 class SimpleStrategy:
+    def __init__(self):
+        self.count = 0
+
     """A learning strategy that selects all word pairs in a unit, in order."""
-    def select(self, unit, i):
-        return unit.pairs[i%len(unit.pairs)]
+    def select(self, unit):
+        pair = unit.pairs[self.count%len(unit.pairs)]
+        self.count += 1
+        return pair
 
 class RandomStrategy:
     """A learning strategy that selects a random pair from all word pairs."""
-    def select(self, unit, i):
+    def select(self, unit):
         return random.choice(unit.pairs)
 
 class ScoreStrategy:
     """A learning strategy that selects a random word pair weighted by inverse score."""
-    def select(self, unit, i):
+    def select(self, unit):
         # WordPair scores are in the interval [0, 1), with exponential decay:
         # After a single correct answer, the score is at 0.5, after two correct at 0.75
         # after 7 attempts at 0.99. We choose weights such that a perfect pair still has a
@@ -184,19 +189,17 @@ class ConsoleLearner:
 
         self.clear_console()
         last = None
-        i = 0
         while True:
             reason = criterion.should_stop(unit)
             if reason:
                 print(f'Stopping: {reason}')
                 break
-            pair = self.strategy.select(unit, i)
+            pair = self.strategy.select(unit)
             # Avoid asking the same pair twice in a row.
             while pair == last and len(unit.pairs) > 1:
-                pair = self.strategy.select(unit, i)
+                pair = self.strategy.select(unit)
             last = pair
             self.test_pair(pair)
-            i += 1
 
     def test_pair(self, pair):
         """Asks for a single word and tests for correctness, recording the outcome."""
