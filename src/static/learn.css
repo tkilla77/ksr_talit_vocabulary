@@ -1,0 +1,24 @@
+body {
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    background-color: antiquewhite;
+    font-family: system-ui, sans-serif;
+    display: grid;
+    justify-content: space-evenly;
+    align-content: space-evenly;
+}
+
+form.words {
+    min-width: 25rem; 
+    background-color: lightgray;
+    padding: 1rem;
+    box-shadow: darkgray 0.2em 0.2em 0.5em;
+    border-radius: 0.5em;
+    border: 0.1em darkblue solid;
+}
+
+span.verdict {
+    display: block;
+}
