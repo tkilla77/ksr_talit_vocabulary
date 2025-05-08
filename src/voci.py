@@ -9,6 +9,11 @@ class WordPair:
     def record(self, correct):
         """Records the result of a single learning attempt."""
         self.stats.record(correct)
+    
+    def test(self, guess):
+        correct = guess == self.word2
+        self.record(correct)
+        return correct
         
     def __str__(self):
         return f'{self.stats} {self.word1} -> {self.word2}'
@@ -205,10 +210,7 @@ class ConsoleLearner:
         """Asks for a single word and tests for correctness, recording the outcome."""
         response = input(f'Translate "{pair.word1}": ')
         self.clear_line()
-        correct = response == pair.word2
-        pair.record(correct)
-        if correct:
+        if pair.test(response):
             print('Correct!')
         else:
             print(f'Incorrect, the translation of "{pair.word1}" is "{pair.word2}"')
-        return correct
