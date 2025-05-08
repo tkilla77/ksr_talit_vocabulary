@@ -166,6 +166,28 @@ class OrCriterion:
                 return reason
         return False
 
+class LearningRun:
+    """An iterator on top of learning strategy and stop criterion."""
+    def __init__(self, unit, strategy, criterion):
+        self.unit = unit
+        self.strategy = strategy
+        self.criterion = criterion
+        self.last = None
+    
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+        reason = self.criterion.should_stop(self.unit)
+        if reason:
+            print(reason)
+            raise StopIteration(reason)
+        pair = self.strategy.select(self.unit)
+        while pair == self.last and len(self.unit.pairs) > 1:
+            pair = self.strategy.select(self.unit)
+        self.last = pair
+        return pair
+
 class ConsoleLearner:
     """A vocabulary prompter for the console (terminal)."""
     def __init__(self, strategy=ScoreStrategy()):
@@ -191,19 +213,9 @@ class ConsoleLearner:
             # Default criterion: stop after 1m or if all scores above 90%
             criterion = OrCriterion(TimerCriterion(datetime.timedelta(minutes=1)),
                                     ScoreCriterion(0.9))
-
+        learning_run = LearningRun(unit, self.strategy, criterion)
         self.clear_console()
-        last = None
-        while True:
-            reason = criterion.should_stop(unit)
-            if reason:
-                print(f'Stopping: {reason}')
-                break
-            pair = self.strategy.select(unit)
-            # Avoid asking the same pair twice in a row.
-            while pair == last and len(unit.pairs) > 1:
-                pair = self.strategy.select(unit)
-            last = pair
+        for pair in learning_run:
             self.test_pair(pair)
 
     def test_pair(self, pair):
