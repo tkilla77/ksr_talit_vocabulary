@@ -8,6 +8,11 @@ body {
     display: grid;
     justify-content: space-evenly;
     align-content: space-evenly;
+    font-size: x-large;
+}
+
+input {
+    font: inherit;
 }
 
 form.words {
@@ -19,6 +24,12 @@ form.words {
     border: 0.1em darkblue solid;
 }
 
-span.verdict {
+
+.verdict {
     display: block;
+    font-size: smaller;
+}
+
+.correction {
+    font-size: small;
 }
