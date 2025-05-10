@@ -35,10 +35,24 @@ def submit(user, unit, word1, word2):
     correct = pair.test(word2)
     return jsonify({'correct': correct, 'answer': word2, 'pair': pair._to_dict()})
 
-@app.route('/<user>/<unit>/')
+@app.route('/<user>/<unit>/learn')
 def learn(user, unit):
     voci_unit = find_unit(unit)
     if not voci_unit:
         return 404, f"Unit '{unit}' does not exist"
     return render_template('learn.html')
 
+@app.route('/<user>/<unit>/stats')
+def stats(user, unit):
+    voci_unit = find_unit(unit)
+    if not voci_unit:
+        return 404, f"Unit '{unit}' does not exist"
+    return render_template('stats.html')
+
+@app.route('/<user>/<unit>/stats-api')
+def stats_api(user, unit):
+    voci_unit = find_unit(unit)
+    if not voci_unit:
+        return 404, f"Unit '{unit}' does not exist"
+    pairs = sorted([pair._to_dict() for pair in voci_unit.pairs], key=lambda x: x['score'])
+    return jsonify({'pairs': pairs})

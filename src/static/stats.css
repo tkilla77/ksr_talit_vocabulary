@@ -1,0 +1,32 @@
+body {
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    background-color: antiquewhite;
+    font-family: system-ui, sans-serif;
+    display: grid;
+    justify-content: space-evenly;
+    align-content: space-evenly;
+    font-size: x-large;
+}
+
+unit-stats {
+    display: grid;
+    grid-template-columns: repeat(5, auto);
+    gap: 0.3em;
+}
+wordpair {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
+}
+stats {
+    display: grid;
+    grid-column: 1 / 4;
+    grid-template-columns: subgrid;
+    text-align: right;
+}
+stats-title {
+    font-weight: bold;
+}
