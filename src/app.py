@@ -42,7 +42,7 @@ def learn(user, unit):
         return 404, f"Unit '{unit}' does not exist"
     return render_template('learn.html')
 
-@app.route('/<user>/<unit>/stats')
+@app.route('/<user>/<unit>/')
 def stats(user, unit):
     voci_unit = find_unit(unit)
     if not voci_unit:
