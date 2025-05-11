@@ -7,7 +7,7 @@ body {
     font-family: system-ui, sans-serif;
     display: grid;
     justify-content: space-evenly;
-    align-content: space-evenly;
+    align-content: center;
     font-size: x-large;
 }
 
