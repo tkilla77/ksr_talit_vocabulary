@@ -24,6 +24,10 @@ form.words {
     border: 0.1em darkblue solid;
 }
 
+.word1, .word2 {
+    display: inline-block;
+    min-width: 10em;
+}
 
 .verdict {
     display: block;
