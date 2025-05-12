@@ -89,13 +89,13 @@ class VocabularyUnit:
                 out.write('\n')
 
 class SimpleStrategy:
-    def __init__(self):
-        self.count = 0
-
     """A learning strategy that selects all word pairs in a unit, in order."""
+    def __init__(self):
+        self.index = 0
+
     def select(self, unit):
-        pair = unit.pairs[self.count%len(unit.pairs)]
-        self.count += 1
+        pair = unit.pairs[self.index % len(unit.pairs)]
+        self.index += 1
         return pair
 
 class RandomStrategy:
